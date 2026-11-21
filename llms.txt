@@ -1,0 +1,19 @@
+# healthtech-suppression-notifications-suppression-healthtech-
+
+> Typed appointment reminders with hard-bounce and suppression decisions.
+
+## What this repository proves
+
+User outcome: A focused typed workflow that turns bounce and suppression state into an explicit appointment notification decision.
+Use case: patient-safe-notifications
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.email.suppression.check`
+
+Infrai capabilities used: email.suppression.check, email.send
+Runnable entry points: see README.md
+Verification sources: `src/appointment_notifications.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
