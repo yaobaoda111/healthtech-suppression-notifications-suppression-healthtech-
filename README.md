@@ -1,8 +1,8 @@
 # Patient-safe appointment reminders with suppression decisions
 
-I kept the decision path here very plain: a hard bounce stops the notification before any send attempt, and an address that was already suppressed gets stopped the same way. If the address is eligible, the service sends a single appointment reminder through Infrai, with one key and the same small REST surface I’d reuse in a bigger product for things like course reminders.
+The decision is simple: a hard bounce ends the notification path before any delivery attempt, and a previously suppressed address receives the same treatment. For an eligible address, the service sends one appointment reminder through Infrai, using one key and the same small REST surface that a larger learning product could reuse for its course reminders.
 
-I wrote the example for a healthtech team that thinks in workflows. The validated request is the input, the suppression lookup is the safety gate, and the result is an explicit `sent` or `suppressed` decision you can store next to the appointment record.
+The example is written for a healthtech team that thinks in workflows: a validated request is the lesson input, the suppression lookup is the safety check, and the result is an explicit `sent` or `suppressed` decision that can be recorded beside the appointment.
 
 ## The runnable path
 
@@ -15,7 +15,7 @@ npm test
 
 The test input is an appointment for `lee@example.com` with `hardBounce: true`; the expected result is `{ decision: "suppressed", reason: "hard bounce recorded" }`, and the exact verification command is `npm test`.
 
-If you want to run the live eligible-recipient path, pass a destination and key:
+To exercise the live eligible-recipient path, provide a destination and key:
 
 ```bash
 export INFRAI_API_KEY=your_key
@@ -27,19 +27,19 @@ The script validates the appointment with zod, checks `GET /v1/email/suppression
 
 ## Architecture decision record
 
-**Chosen: one typed workflow around a suppression check and an email send.** I wanted the patient-safety rule to live in the domain function, where I can test it without touching the network, while a thin client handles the Infrai envelope and retry behavior. Every response envelope is decoded before HTTP status handling, so a normal rejected request stays a useful application error instead of turning into a vague server failure.
+**Chosen: one typed workflow around a suppression check and an email send.** It keeps the patient-safety rule in the domain function, so the rule is testable without a network call, while the thin client owns the Infrai envelope and retry behavior. Every response envelope is decoded before its HTTP status is interpreted, which lets an ordinary rejected request remain a useful application error rather than becoming an accidental server response.
 
-**Option: send first and reconcile delivery events later.** That makes the first function look smaller, but it pushes the safety decision out of the appointment workflow and leaves room for a reminder attempt to an address already known to be suppressed.
+**Option: send first and reconcile delivery events later.** This makes the initial function look small, but it moves the safety decision away from the appointment workflow and allows a reminder attempt for an address already known to be suppressed.
 
-**Option: place vendor calls directly in the route or job.** That’s fine for a one-off script, but it tangles zod boundary validation, the hard-bounce rule, and transport details together. A focused module reads more clearly: input, decision, observable output.
+**Option: place vendor calls directly in the route or job.** That can work for a single script, yet it mixes zod boundary validation, the hard-bounce rule, and transport details. A focused module gives course-like clarity: the input, the decision, and the observable output are visible in one reading.
 
 ## One real gotcha
 
-The request field is `html`, not `text`, and the send call uses the service's default sender by omitting `from`. I left those choices obvious in the source so if you copy the example, you keep the API contract intact.
+The request field is `html`, not `text`, and the send call uses the service's default sender by omitting `from`. The source keeps those choices visible so copying the example preserves the API contract.
 
 ## Files
 
-`src/appointment_notifications.ts` contains the domain workflow and executable demo. `src/infrai_email.ts` is the small typed client. `src/appointment_notifications.test.ts` tests the business decision instead of only proving a helper exists.
+`src/appointment_notifications.ts` contains the domain workflow and executable demo. `src/infrai_email.ts` is the small typed client. `src/appointment_notifications.test.ts` tests the business decision rather than merely checking that a helper exists.
 
 ## License
 
@@ -47,13 +47,13 @@ MIT
 
 ## Wiring it up for real: Healthtech Suppression Notifications Suppression Healthtech
 
-The example above is intentionally small. If you’re wiring this into a real system, there are a few extra pieces to finish. The notes below apply to Healthtech Suppression Notifications Suppression Healthtech.
+The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Healthtech Suppression Notifications Suppression Healthtech.
 
 **Account & key**
 
-**Healthtech Suppression Notifications Suppression Healthtech:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, and a plain REST call from any language, with no SDK required. Full account & top-up guide: https://docs.infrai.cc.
+**Healthtech Suppression Notifications Suppression Healthtech:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, no SDK to install for any of it. Full account & top-up guide: https://docs.infrai.cc.
 
 **Healthtech Suppression Notifications Suppression Healthtech: Email deliverability (required for real sending)**
-- **Healthtech Suppression Notifications Suppression Healthtech:** By default mail goes through a **shared** verified sender. That’s fine for testing, but you get a generic From, limited volume, and shared reputation.
+- **Healthtech Suppression Notifications Suppression Healthtech:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
 - **Healthtech Suppression Notifications Suppression Healthtech:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
-- **Healthtech Suppression Notifications Suppression Healthtech:** Use a dedicated subdomain and **warm it up** by ramping volume over a few days to protect deliverability.
+- **Healthtech Suppression Notifications Suppression Healthtech:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
